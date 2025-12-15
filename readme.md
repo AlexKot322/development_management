@@ -1,51 +1,99 @@
-mkdir notification-integration
-cd notification-integration
+### Запуск всех сервисов:
 
-# Создать все файлы из структуры выше
-
-Шаг 2: Запуск системы
+```
 docker-compose up --build
+```
 
-Шаг 3: Тестирование
+## Альтернативный запуск (в фоновом режиме):
 
-1. Создание пользователя через User Service:
+```
+docker-compose up --build -d
+```
 
+## Просмотр логов:
+
+```
+docker-compose logs -f
+```
+
+## Остановка:
+
+```
+docker-compose down
+```
+
+## Проверка запущенных контейнеров:
+
+```
+docker-compose ps
+```
+
+## Проверка доступности сервисов:
+
+- User Service API: http://localhost:8000/docs (документация)
+- RabbitMQ Management: http://localhost:15672
+- http://localhost:8001/health
+
+## Создание пользователя:
+
+1. Через терминал bash:
+
+```
 curl -X POST "http://localhost:8000/users/" \
- -H "Content-Type: application/json" \
- -d '{"email": "test@example.com", "name": "Иван Иванов"}'
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "name": "Иван Иванов"}'
+```
 
-2. Проверка созданных пользователей:
+2. С помощью браузера и openapi:
 
+- Откройте http://localhost:8000/docs
+- Нажмите на "POST /users/"
+- Нажмите "Try it out"
+- Введите данные:
+
+```
+{
+  "email": "test@example.com",
+  "name": "Иван Иванов"
+}
+```
+
+- Нажмите "Execute"
+
+## Получить пользователей:
+
+1. С помощью bash терминала:
+
+```
 curl "http://localhost:8000/users/"
+```
 
-3. Мониторинг логов:
+2. С помощью браузера и openapi:
 
+- Откройте http://localhost:8000/docs
+- Нажмите на "GET/users/"
+- Нажмите "Try it out"
+- Нажмите "Execute"
+
+## Дополнительные команды:
+
+```
 # Просмотр логов всех сервисов
-
 docker-compose logs -f
 
 # Просмотр логов конкретного сервиса
-
 docker-compose logs -f user-service
 docker-compose logs -f email-worker
 
-4. Веб-интерфейс RabbitMQ:
+# Проверка использования ресурсов
+docker stats
 
-Откройте в браузере: http://localhost:15672
+# Остановить все сервисы
+docker-compose down
 
-Логин: admin
+# Остановить и удалить тома (данные БД)
+docker-compose down -v
 
-Пароль: password
-
-Перейдите в Queues → email_queue для мониторинга сообщений
-
-7. Тестирование механизма retry
-
-Симуляция ошибок в Email Worker:
-В файле email-worker/worker.py в методе send_email уже есть симуляция 20% вероятности ошибки. Можно увеличить вероятность для тестирования:
-
-if random.random() < 0.8:
-raise Exception("Simulated email sending error")
-
-Наблюдение за retry в логах:  
-docker-compose logs -f email-worker
+# Перезапустить конкретный сервис
+docker-compose restart user-service
+```
